@@ -13,7 +13,7 @@ It's a macro based scripting language made from Javascript, used inside Twine, f
 3. Now you can use additional macros!
 ## Macors
 **NOTE:** Twine (GUI) will mark these macros as incorrect, beacuse they are not it's native macros - don't worry, they'll work.
-### A <span color="red">(savetofile: String, String)</span> macro
+### A <font color="red">(savetofile: String, String)</font> macro
 This macro pulls your save data **from cookies** - the last time when you used `(save-game:)` and downloads it as an encrypted file. It's important to use `(save-game:)` or checking with `(saved-games:)` before using this macro
 #### It takes **2** arguments
 - **slotName** - string containing your slot name. The same as you wold use for `(load-game:)` or `(save-game:)` macro.
