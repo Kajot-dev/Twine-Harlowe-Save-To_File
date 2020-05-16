@@ -31,7 +31,7 @@ const privateSave = {
     return null;
   },
   download: (input, fileType, fileName) => {
-    if (!input || !fileType || !fileName) return null;
+    if (typeof input !== "string" || !fileType || !fileName) return null;
     var fObject = new Blob([input], {
       type: fileType
     });
@@ -282,28 +282,33 @@ Macros.add("readfromfile", function(...args) {
     let accepted = [];
     if (args.length > 2) accepted = args.slice(2, args.length-1);
     else accepted = [args[1]];
-    console.log(accepted);
-	  privateSave.read(args[1], accepted);
+    privateSave.read(args[1], accepted);
   }
-	return {
-		TwineScript_TypeName: "a (readfromfile:) operation",
+  return {
+    TwineScript_TypeName: "a (readfromfile:) operation",
     TwineScript_ObjectName: "a (readfromfile:) operation",
     TwineScript_Print: function () { return "" }
-	}
+  }
 }, [String, Macros.TypeSignature.zeroOrMore(Macros.TypeSignature.either(String))]);
 Macros.add("savetofile", function(_, n, s) { 
-	privateSave.file(n, s);
-	return {
-		TwineScript_TypeName: "a (savetofile:) operation",
+  n = n.trim();
+  while (n[n.length - 1] == ".") n = n.slice(0, n.length-1);
+  if (n === "") return null;
+  privateSave.file(n, s);
+  return {
+    TwineScript_TypeName: "a (savetofile:) operation",
     TwineScript_ObjectName: "a (savetofile:) operation",
     TwineScript_Print: function () { return "" }
-	}
+  }
 }, [String, String]);
 Macros.add("savetofiledirect", function(_, n, s) {
+  n = n.trim();
+  while (n[n.length - 1] == ".") n = n.slice(0, n.length-1);
+  if (n === "") return null;
   privateSave.fileDirect(n, s);
   return {
-		TwineScript_TypeName: "a (savetofiledirect:) operation",
+    TwineScript_TypeName: "a (savetofiledirect:) operation",
     TwineScript_ObjectName: "a (savetofiledirect:) operation",
     TwineScript_Print: function () { return "" }
-	}
+  }
 }, [String, String]);
