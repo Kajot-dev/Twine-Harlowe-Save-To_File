@@ -1,9 +1,9 @@
 const privateSave = {
   //---CONFIGURABLES---
-  cheatPassage: false, //może być niezdefiniowane
+  cheatPassage: false, //string or false
   binKey: 3,
-  maxFileSize: 512, //w KB
-  extension: "sav", //bez '.' i małymi literami
+  maxFileSize: 512, //kilobytes
+  extension: "sav", //lower case, without '.'
   //---END OF CONFIGURABLES---
   openDialog: (message, func) => {
     func = typeof func == "function" ? func : () => {};
@@ -31,7 +31,7 @@ const privateSave = {
     return null;
   },
   download: (input, fileType, fileName) => {
-    if (!input || !fileType || !fileName) return null;
+    if (typeof input !== "string"  || !fileType || !fileName) return null;
     var fObject = new Blob([input], {
       type: fileType
     });
@@ -204,8 +204,8 @@ const privateSave = {
         let key = saveArray[0];
         var saveName = key.slice('49').trim();
         if (slots.includes(saveName)) {
-          if (!(State.deserialise(saveArray[1]) instanceof Error)) { //if this returns true, we are absolutely sure, that save is gonna work
-            localStorage.setItem("(Saved Game " + privateSave.storyUID + ") " + targetslot, saveArray[1]);
+          if (!(State.deserialise(saveArray[1]) instanceof Error)) { //real save loading is here
+            localStorage.setItem("(Saved Game " + privateSave.storyUID + ") " + targetslot, saveArray[1]); //save to localStorage for compatibility
             resolve(true);
           } else {
             privateSave.openDialog("Save corrupted - Twine refused loading it!");
@@ -250,7 +250,7 @@ const privateSave = {
       fileSave.style.display = 'none';
       fileSave.setAttribute('accept', "*."+privateSave.extension);
       fileSave.setAttribute('size', '1');
-      $(Selectors.passage).append(fileSave);
+      $(Selectors.passage).append(fileSave); //for reusage of the element
     }
     fileSave.addEventListener("change", () => {
       privateSave.process(fileSave, slot, slots).then(() => {
@@ -282,29 +282,29 @@ Macros.add("readfromfile", function(...args) {
     let accepted = [];
     if (args.length > 2) accepted = args.slice(2, args.length);
     else accepted = [args[1]];
-	  privateSave.read(args[1], accepted);
+    privateSave.read(args[1], accepted);
   }
-	return {
-		TwineScript_TypeName: "a (readfromfile:) operation",
+  return {
+    TwineScript_TypeName: "a (readfromfile:) operation",
     TwineScript_ObjectName: "a (readfromfile:) operation",
     TwineScript_Print: function () { return "" }
-	}
+  }
 }, [String, Macros.TypeSignature.zeroOrMore(String)]);
 Macros.add("savetofile", function(_, n, s) { 
   n = n.trim();
   while (n[n.length - 1] == ".") n = n.slice(0, n.length-1);
-	privateSave.file(n, s);
-	return {
-		TwineScript_TypeName: "a (savetofile:) operation",
+  privateSave.file(n, s);
+  return {
+    TwineScript_TypeName: "a (savetofile:) operation",
     TwineScript_ObjectName: "a (savetofile:) operation",
     TwineScript_Print: function () { return "" }
-	}
+  }
 }, [String, String]);
 Macros.add("savetofiledirect", function(_, n, s) {
   privateSave.fileDirect(n, s);
   return {
-		TwineScript_TypeName: "a (savetofiledirect:) operation",
+    TwineScript_TypeName: "a (savetofiledirect:) operation",
     TwineScript_ObjectName: "a (savetofiledirect:) operation",
     TwineScript_Print: function () { return "" }
-	}
+  }
 }, [String, String]);
