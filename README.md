@@ -27,7 +27,7 @@ This macro works similar to `(savetofile:)`, but it pulls your save data **direc
 This macro takes save file and loads it. Simple, right? But, there are few options...
 #### It takes **2** arguments
 - **slotName** - string containing your slot name to load progress into. Note that if you already have saved game here, **it'll overwrite it**
-- **acceptedSlots [optional]** - string**s** containing accepted name slots - if not speciifed defaults to **slotName**'s value. Note, that if you specify al least one accepted slot, it **won't include slotName** in accepted slots (if you want so, you should **pass it again**). How it works? For eg. if you saved your progress with slotname "SLOT A", and your accepted slot is "SLOT B" it won't work. "SLOT A" must be included in **acceptedSlots**, or if they are not specifed - same as **slotName**
+- **acceptedSlots [optional]** - string**s** containing accepted name slots - if not specified defaults to **slotName**'s value. Note, that if you specify al least one accepted slot, it **won't include slotName** in accepted slots (if you want so, you should **pass it again**). How it works? For eg. if you saved your progress with slotname "SLOT A", and your accepted slot is "SLOT B" it won't work. "SLOT A" must be included in **acceptedSlots**, or if they are not specifed - same as **slotName**
 ## Additional options
 Configurables are specified at the top of the file.
 - `cheatPassage` (string) if specified instead of saying "Cheater!" (when it detects modifying save file) it goes to specified **passage**
@@ -36,11 +36,14 @@ Configurables are specified at the top of the file.
 - `binKey` key for the last (3rd) and weakest from of the encryption - integr from **2** to **10*** - higher number - bigger file
 ## Additional info
 ### Encyrption
-Utility uses **a few** types od encyption. All keys (except binKey) are taken from story's **ifid**. It means, that different stories are automatically **incompatible**
-1. Vigenere ecryption
+Utility uses **a few** types od encryption. All keys (except binKey) are taken from story's **ifid**. It means, that different stories are automatically **incompatible**
+1. Vigenere encryption
 2. 8 char checksum
 3. Checksum is inserted in various places inside the file
 4. Additional scramble using Javascript's `^` operator
+#### Where do I find my story's ifid?
+- Click `Story statistics` while having your story opened inside Twine
+- In HTML published version of your story, it's stored in `ifid` attribute of `tw-storydata` element
 ### Dialogs
 All issues are reported by built-in Twine dialog boxes and JS console :)
 ### Anti cheat
