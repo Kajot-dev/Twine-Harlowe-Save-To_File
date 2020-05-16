@@ -1,288 +1,288 @@
 const privateSave = {
   //---CONFIGURABLES---
-  cheatPassage: false, //może być niezdefiniowane
+  cheatPassage: false, //string or false boolean
   binKey: 3,
-  maxFileSize: 512, //w KB
-  extension: "sav", //bez '.' i małymi literami
+  maxFileSize: 512, //KB
+  extension: "sav", //lowercase and without '.'
   //---END OF CONFIGURABLES---
-  a: (o, p) => {
-    p = typeof p == "function" ? p : () => {};
-    if (typeof o == "string") {
-      return $(Selectors.story).append(Dialog(o, undefined, p));
+  openDialog: (message, func) => {
+    func = typeof func == "function" ? func : () => {};
+    if (typeof message == "string") {
+      return $(Selectors.story).append(Dialog(message, undefined, func));
     } else return null;
   },
-  b: o => {
-    var p = [];
-    for (let r of Object.keys(localStorage)) {
-      if (privateSave.l(r, true, false, true) === true) {
-        if (r.slice(49).trim() === o) p.push(r, localStorage.getItem(r));
+  get: saveslot => {
+    var archive = [];
+    for (let key of Object.keys(localStorage)) {
+      if (privateSave.verify(key, true, false, true) === true) {
+        if (key.slice(49).trim() === saveslot) archive.push(key, localStorage.getItem(key));
       }
     }
-    if (p.length >= 2) {
-      var r = p.join('\n');
-      return r;
+    if (archive.length >= 2) {
+      var output = archive.join('\n');
+      return output;
     } else {
       return null;
     }
   },
-  c: o => {
-    let p = State.serialise();
-    if (typeof p === "string") return "(Saved Game " + privateSave.s + ") " + o + "\n" + p;
+  getDirect: slot => {
+    let data = State.serialise();
+    if (typeof data === "string") return "(Saved Game " + privateSave.storyUID + ") " + slot + "\n" + data;
     return null;
   },
-  d: (o, p, r) => {
-    if (!o || !p || !r) return null;
-    var s = new Blob([o], {
-      type: p
+  download: (input, fileType, fileName) => {
+    if (!input || !fileType || !fileName) return null;
+    var fObject = new Blob([input], {
+      type: fileType
     });
-    var t = document.createElement('a');
-    t.setAttribute('download', r);
-    t.setAttribute('id', 'savedownload');
-    t.setAttribute('href', URL.createObjectURL(s));
-    t.dataset.downloadurl = [p, t.download, t.href].join(':');
-    t.style.display = 'none';
-    t.click();
+    var dClick = document.createElement('a');
+    dClick.setAttribute('download', fileName);
+    dClick.setAttribute('id', 'savedownload');
+    dClick.setAttribute('href', URL.createObjectURL(fObject));
+    dClick.dataset.downloadurl = [fileType, dClick.download, dClick.href].join(':');
+    dClick.style.display = 'none';
+    dClick.click();
     setTimeout(function () {
-      URL.revokeObjectURL(t.href);
+      URL.revokeObjectURL(dClick.href);
     }, 1500);
   },
-  e: (o) => {
-    let p = privateSave.s.split("-");
-    o = privateSave.j(o, p[4]);
-    let r = privateSave.g(o, p[0]);
-    o = privateSave.h(o, r, p[1]+p[2]);
-    o = privateSave.k(o, privateSave.binKey);
-    return o;
+  encode: (input) => {
+    let keys = privateSave.storyUID.split("-");
+    input = privateSave.vigenere(input, keys[4]);
+    let checkSum = privateSave.checkSum(input, keys[0]);
+    input = privateSave.insertCheckSum(input, checkSum, keys[1]+keys[2]);
+    input = privateSave.encodeBin(input, privateSave.binKey);
+    return input;
   },
-  f: (o) => {
-    let p = privateSave.s.split("-");
-    o = privateSave.k(o, privateSave.binKey);
-    let [r, s] = privateSave.i(o, p[0].length, p[1]+p[2]);
-    o = r;
-    let t = privateSave.j(o, p[4], true);
-    let u = privateSave.l(t, false, true, false);
-    if (u === true) {
-      if (s === privateSave.g(o, p[0])) {
-        o = t;
-        return o;
+  decode: (input) => {
+    let keys = privateSave.storyUID.split("-");
+    input = privateSave.encodeBin(input, privateSave.binKey);
+    let [text, checksum] = privateSave.pullCheckSum(input, keys[0].length, keys[1]+keys[2]);
+    input = text;
+    let tempVigenere = privateSave.vigenere(input, keys[4], true);
+    let check = privateSave.verify(tempVigenere, false, true, false);
+    if (check === true) {
+      if (checksum === privateSave.checkSum(input, keys[0])) {
+        input = tempVigenere;
+        return input;
       } else return [null, "cheater"];
-    } else return [null, u];
+    } else return [null, check];
   },
-  g: (o, p) => {
-    var r = p.split("").map(x => x.charCodeAt(0));
-    while(o.length % p.length != 0) o += ".";
-    for (let i=0; i < o.length/p.length; i++) {
-      for (let j=0; j < p.length; j++) {
-        r[j] = (r[j]+o.charCodeAt(i*p.length+j)) % 128;
+  checkSum: (input, key) => {
+    var kody = key.split("").map(x => x.charCodeAt(0));
+    while(input.length % key.length != 0) input += ".";
+    for (let i=0; i < input.length/key.length; i++) {
+      for (let j=0; j < key.length; j++) {
+        kody[j] = (kody[j]+input.charCodeAt(i*key.length+j)) % 128;
       }
     }
-    var s = "";
-    for (let i=0; i < p.length; i++) {
-      s += String.fromCharCode(65 + (r[i] % 26));
+    var out = "";
+    for (let i=0; i < key.length; i++) {
+      out += String.fromCharCode(65 + (kody[i] % 26));
     }
-    return s;
+    return out;
   },
-  h: (o, p, r) => {
-    while (r.length < p.length) r += r;
-    r = r.slice(0, p.length);
-    var s = r.split("").map(x => x.charCodeAt(0));
-    for (let i=0 ; i < p.length; i++) {
-      if (s[i] < o.length) {
-        o = o.slice(0, s[i]) + p[i] + o.slice(s[i]);
+  insertCheckSum: (input, checksum, key) => {
+    while (key.length < checksum.length) key += key;
+    key = key.slice(0, checksum.length);
+    var kody = key.split("").map(x => x.charCodeAt(0));
+    for (let i=0 ; i < checksum.length; i++) {
+      if (kody[i] < input.length) {
+        input = input.slice(0, kody[i]) + checksum[i] + input.slice(kody[i]);
       } else{
-        o += p[i];
+        input += checksum[i];
       }
     }
-    return o;
+    return input;
   },
-  i: (o, p, r) => {
-    while (r.length < p) r += r;
-    r = r.slice(0, p);
-    var s = r.split("").map(x => x.charCodeAt(0)).reverse();
-    var t = "";
-    for (let i=0 ; i < p; i++) {
-      if (s[i] < o.length) {
-        t += o[s[i]];
-        o = o.slice(0, s[i]) + o.slice(s[i]+1);
+  pullCheckSum: (input, checksumLength, key) => {
+    while (key.length < checksumLength) key += key;
+    key = key.slice(0, checksumLength);
+    var kody = key.split("").map(x => x.charCodeAt(0)).reverse();
+    var out = "";
+    for (let i=0 ; i < checksumLength; i++) {
+      if (kody[i] < input.length) {
+        out += input[kody[i]];
+        input = input.slice(0, kody[i]) + input.slice(kody[i]+1);
       } else{
-        t += o[o.length-1];
-        o = o.slice(0, -1);
+        out += input[input.length-1];
+        input = input.slice(0, -1);
       }
     }
-    t = t.split("").reverse().join("");
-    return [o, t];
+    out = out.split("").reverse().join("");
+    return [input, out];
   },
-  j: (o, p, r) => {
-    p = p.length <= o.length ? p : p.slice(0, o.length);
-    let s = 0;
-    var t = "";
-    for (let i=0; i < o.length; i++) {
-      if (privateSave.r.includes(o[i])) {
-        let x = privateSave.r.indexOf(o[i]);
-        let y = privateSave.r.indexOf(p[(i-s) % p.length]);
-        if (!r) {
-          x = (x+y) % privateSave.r.length;
+  vigenere: (input, key, decode) => {
+    key = key.length <= input.length ? key : key.slice(0, input.length);
+    let pop = 0;
+    var out = "";
+    for (let i=0; i < input.length; i++) {
+      if (privateSave.vigenereAlphabet.includes(input[i])) {
+        let x = privateSave.vigenereAlphabet.indexOf(input[i]);
+        let y = privateSave.vigenereAlphabet.indexOf(key[(i-pop) % key.length]);
+        if (!decode) {
+          x = (x+y) % privateSave.vigenereAlphabet.length;
         } else {
           x -= y;
-          if (x < 0) x += privateSave.r.length;
+          if (x < 0) x += privateSave.vigenereAlphabet.length;
         }
-        t += privateSave.r[x];
+        out += privateSave.vigenereAlphabet[x];
       } else {
-        t += o[i];
-        s++;
+        out += input[i];
+        pop++;
       }
     }
-    return t;
+    return out;
   },
-  k: (o, p) => {
-    if (typeof p !== 'number') return o;
-    p = p.toString();
-    var t = '';
-    o = o.toString();
-    for (let i = 0; i < o.length; i++) {
-      let r = o.charCodeAt(i);
-      let s = r ^ p;
-      t += String.fromCharCode(s);
+  encodeBin: (input, key) => {
+    if (typeof key !== 'number') return input;
+    key = key.toString();
+    var output = '';
+    input = input.toString();
+    for (let i = 0; i < input.length; i++) {
+      let currentLetter = input.charCodeAt(i);
+      let encodedLetter = currentLetter ^ key;
+      output += String.fromCharCode(encodedLetter);
     }
-    return t;
+    return output;
   },
-  l: (o, p, r, s) => {
-    o = o.includes("\n") ? o.split("\n")[0] : o;
-    let t = o.includes('Filename') ? o.slice(21, 57).trim() : o.slice(12, 48).trim();
-    p = p ? !o.includes('Filename') : true;
-    s = s ? o.slice(1, 11).trim() !== "Saved Game" : false;
-    if ((o[0] !== "(" || o[6] !== " " || o[11] !== " ") || s) {
-      if (r) privateSave.a("This is not a Twine save... is it?");
+  verify: (text, filBool, commands, verSave) => {
+    text = text.includes("\n") ? text.split("\n")[0] : text;
+    let StoryId = text.includes('Filename') ? text.slice(21, 57).trim() : text.slice(12, 48).trim();
+    filBool = filBool ? !text.includes('Filename') : true;
+    verSave = verSave ? text.slice(1, 11).trim() !== "Saved Game" : false;
+    if ((text[0] !== "(" || text[6] !== " " || text[11] !== " ") || verSave) {
+      if (commands) privateSave.openDialog("This is not a Twine save... is it?");
       return "corrupted_save_name";
     }
-    if (t !== privateSave.s) {
-      if (r) privateSave.a("I can't open this save, it's from another Twine game!");
+    if (StoryId !== privateSave.storyUID) {
+      if (commands) privateSave.openDialog("I can't open this save, it's from another Twine game!");
       return "wrong_id";
     }
-    if (!p) return "wrong_save_key";
+    if (!filBool) return "wrong_save_key";
     return true;
   },
-  m: (o, p, r) => {
-    return new Promise((a, b) => {
-      r = Array.isArray(r) ? r : [r];
-      var s = o.files[o.files.length - 1];
-      if (s.name.slice(s.name.lastIndexOf(".")+1).toLowerCase() !== privateSave.extension) {
-        privateSave.a("Wrong extension, correct one is: ."+privateSave.extension);
-        b("wrong_extension");
+  process: (fileInput, targetslot, slots) => {
+    return new Promise((resolve, reject) => {
+      slots = Array.isArray(slots) ? slots : [slots];
+      var file = fileInput.files[fileInput.files.length - 1];
+      if (file.name.slice(file.name.lastIndexOf(".")+1).toLowerCase() !== privateSave.extension) {
+        privateSave.openDialog("Wrong extension, correct one is: ."+privateSave.extension);
+        reject("wrong_extension");
         return;
       }
-      if (!s || (s.size / 1024) > privateSave.maxFileSize) {
-        privateSave.a("File too large (or your browser couldn'y provide it)");
-        b("none/too_large");
+      if (!file || (file.size / 1024) > privateSave.maxFileSize) {
+        privateSave.openDialog("File too large (or your browser couldn'y provide it)");
+        reject("none/too_large");
         return;
       }
-      var t = new FileReader();
-      t.readAsText(s);
-      t.onload = c => {
-        let u = c.target.result;
-        if (u.length <= 50) {
-          privateSave.a("Empty/too short file!");
-          b("empty/too_short");
+      var fileRead = new FileReader();
+      fileRead.readAsText(file);
+      fileRead.onload = ready => {
+        let input = ready.target.result;
+        if (input.length <= 50) {
+          privateSave.openDialog("Empty/too short file!");
+          reject("empty/too_short");
           return;
         }
-        u = privateSave.f(u);
-        if (Array.isArray(u)) {
-          b(u[1]);
+        input = privateSave.decode(input);
+        if (Array.isArray(input)) {
+          reject(input[1]);
           return;
         }
-        if (u.slice(1, 11) !== "Saved Game") {
-          privateSave.a("I can't load this save - is this even a save file?");
-          b("no_phrase");
+        if (input.slice(1, 11) !== "Saved Game") {
+          privateSave.openDialog("I can't load this save - is this even a save file?");
+          reject("no_phrase");
           return;
         }
-        var w = u.split('\n');
-        if (w.length < 2) {
-          privateSave.a("I can't load this save - can't unpack it!");
-          b("no_line_break");
+        var saveArray = input.split('\n');
+        if (saveArray.length < 2) {
+          privateSave.openDialog("I can't load this save - can't unpack it!");
+          reject("no_line_break");
           return;
         }
-        let x = w[0];
-        var y = x.slice('49').trim();
-        if (r.includes(y)) {
-          if (!(State.deserialise(w[1]) instanceof Error)) { //if this returns true, we are absolutely sure, that save is gonna work
-            localStorage.setItem("(Saved Game " + privateSave.s + ") " + p, w[1]);
-            a(true);
+        let key = saveArray[0];
+        var saveName = key.slice('49').trim();
+        if (slots.includes(saveName)) {
+          if (!(State.deserialise(saveArray[1]) instanceof Error)) { //if this returns true, we are absolutely sure, that save is gonna work
+            localStorage.setItem("(Saved Game " + privateSave.storyUID + ") " + targetslot, saveArray[1]);
+            resolve(true);
           } else {
-            privateSave.a("Save corrupted - Twine refused loading it!");
-            b("corrupted_save_data");
+            privateSave.openDialog("Save corrupted - Twine refused loading it!");
+            reject("corrupted_save_data");
           }
         } else {
-          privateSave.a("I'm not allowed to load this save!");
-          b("wrong_slot");
+          privateSave.openDialog("I'm not allowed to load this save!");
+          reject("wrong_slot");
         }
       };
-      t.onerror = () => {
-        privateSave.a("Error reading the file!");
-        b("file_error");
+      fileRead.onerror = () => {
+        privateSave.openDialog("Error reading the file!");
+        reject("file_error");
       };
     });
   },
-  n: (o, p) => {
-    var r = privateSave.b(p);
-    if (r) {
-      r = privateSave.e(r);
-      privateSave.d(r, "text/plain", o+"."+privateSave.extension);
+  file: (name, slot) => {
+    var saveOutput = privateSave.get(slot);
+    if (saveOutput) {
+      saveOutput = privateSave.encode(saveOutput);
+      privateSave.download(saveOutput, "text/plain", name+"."+privateSave.extension);
     } else {
-      privateSave.a("I can't download save which doesn't exists!");
-      console.error(...privateSave.t, "I can't download save which doesn't exists!");
+      privateSave.openDialog("I can't download save which doesn't exists!");
+      console.error(...privateSave.appPrefix, "I can't download save which doesn't exists!");
     }
   },
-  o: (o, p) => {
-    let r = privateSave.c(p);
-    if (typeof r === "null") {
-      privateSave.a("I couldn't download save - probably Twine's error!");
+  fileDirect: (name, slot) => {
+    let saveData = privateSave.getDirect(slot);
+    if (typeof saveData === "null") {
+      privateSave.openDialog("I couldn't download save - probably Twine's error!");
       return null;
     }
-    r = privateSave.e(r);
-    privateSave.d(r, "text/plain", o+"."+privateSave.extension);
+    saveData = privateSave.encode(saveData);
+    privateSave.download(saveData, "text/plain", name+"."+privateSave.extension);
   },
-  p: (o, p) => {
-    var r = $('#saveupload')[0];
-    if (!r) {
-      r = document.createElement('input');
-      r.setAttribute('type', 'file');
-      r.setAttribute('id', 'saveupload');
-      r.style.display = 'none';
-      r.setAttribute('accept', "*."+privateSave.extension);
-      r.setAttribute('size', '1');
-      $(Selectors.passage).append(r);
+  read: (slot, slots) => {
+    var fileSave = $('#saveupload')[0];
+    if (!fileSave) {
+      fileSave = document.createElement('input');
+      fileSave.setAttribute('type', 'file');
+      fileSave.setAttribute('id', 'saveupload');
+      fileSave.style.display = 'none';
+      fileSave.setAttribute('accept', "*."+privateSave.extension);
+      fileSave.setAttribute('size', '1');
+      $(Selectors.passage).append(fileSave);
     }
-    r.addEventListener("change", () => {
-      privateSave.m(r, o, p).then(() => {
-        r.remove();
+    fileSave.addEventListener("change", () => {
+      privateSave.process(fileSave, slot, slots).then(() => {
+        fileSave.remove();
         Engine.showPassage(State.passage);
-        console.log(...privateSave.t, "Reading from file was succesful!");
-      }).catch(s => {
-        r.remove();
-        console.error(...privateSave.t, "Reading from file failed, because:", s);
-        if (s == "cheater") {
+        console.log(...privateSave.appPrefix, "Reading from file was succesful!");
+      }).catch(reason => {
+        fileSave.remove();
+        console.error(...privateSave.appPrefix, "Reading from file failed, because:", reason);
+        if (reason == "cheater") {
           if (privateSave.cheatPassage) Engine.goToPassage(privateSave.cheatPassage);
-          else privateSave.a("Cheater!");
+          else privateSave.openDialog("Cheater!");
         }
       });
     }, {
       once: true
     });
-    r.click();
+    fileSave.click();
   },
-  r: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890",
-  s: $('tw-storydata').attr('ifid'),
-  t: ["%cSAVE TO FILE:", "font-weight: bold"]
+  vigenereAlphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890",
+  storyUID: $('tw-storydata').attr('ifid'),
+  appPrefix: ["%cSAVE TO FILE:", "font-weight: bold"]
 };
 Object.freeze(privateSave);
-console.info(privateSave.t[0]+"%c Save to file script is ready!", privateSave.t[1], "color: green;");
+console.info(privateSave.appPrefix[0]+"%c Save to file script is ready!", privateSave.appPrefix[1], "color: green;");
 const Macros = require("macros");
-Macros.add("readfromfile", function(...a) {
-  if (a.length > 1)  {
-    let b = [];
-    if (a.length > 2) b = a.slice(2, a.length);
-    else b = [a[1]];
-	  privateSave.p(a[1], b);
+Macros.add("readfromfile", function(...args) {
+  if (args.length > 1)  {
+    let accepted = [];
+    if (args.length > 2) accepted = args.slice(2, args.length);
+    else accepted = [args[1]];
+	  privateSave.read(args[1], accepted);
   }
 	return {
 		TwineScript_TypeName: "a (readfromfile:) operation",
@@ -294,7 +294,7 @@ Macros.add("savetofile", function(_, n, s) {
   n = n.trim();
   while (n[n.length - 1] == ".") n = n.slice(0, n.length-1);
   if (n === "") return null;
-	privateSave.n(n, s);
+	privateSave.file(n, s);
 	return {
 		TwineScript_TypeName: "a (savetofile:) operation",
     TwineScript_ObjectName: "a (savetofile:) operation",
@@ -305,7 +305,7 @@ Macros.add("savetofiledirect", function(_, n, s) {
   n = n.trim();
   while (n[n.length - 1] == ".") n = n.slice(0, n.length-1);
   if (n === "") return null;
-  privateSave.o(n, s);
+  privateSave.fileDirect(n, s);
   return {
 		TwineScript_TypeName: "a (savetofiledirect:) operation",
     TwineScript_ObjectName: "a (savetofiledirect:) operation",
