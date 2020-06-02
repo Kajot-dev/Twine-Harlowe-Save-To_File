@@ -23,7 +23,7 @@ This macro works similar to `(savetofile:)`, but it pulls your save data **direc
 #### It takes **2** arguments (same as before)
 - **slotName** - string containing your slot name. The same as you wold use for `(load-game:)` or `(save-game:)` macro.
 - **fileName** - string conatining your file name, **without extension** for example `my_save`
-### A `(loadfromfile: String, ...String)` macro
+### A `(loadfromfile: String [, ...String])` macro
 This macro takes save file and loads it. Simple, right? But, there are few options...
 #### It takes **2** arguments
 - **slotName** - string containing your slot name to load progress into. Note that if you already have saved game here, **it'll overwrite it**
