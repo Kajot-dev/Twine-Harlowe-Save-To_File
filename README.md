@@ -27,7 +27,7 @@ This macro works similar to `(savetofile:)`, but it pulls your save data **direc
 This macro takes save file and loads it. Simple, right? But, there are few options...
 #### It takes **2** arguments
 - **slotName** - string containing your slot name to load progress into. Note that if you already have saved game here, **it'll overwrite it**
-- **acceptedSlots [optional]** - string**s** containing accepted name slots - if not specified defaults to **slotName**'s value. Note, that if you specify al least one accepted slot, it **won't include slotName** in accepted slots (if you want so, you should **pass it again**). How it works? For eg. if you saved your progress with slotname "SLOT A", and your accepted slot is "SLOT B" it won't work. "SLOT A" must be included in **acceptedSlots**, or if they are not specifed - same as **slotName**
+- **acceptedSlots [optional]** - string**s** containing accepted name slots - if not specified defaults to **slotName**'s value. Note, that if you specify al least one accepted slot, it **won't include slotName** in accepted slots (if you want so, you should **pass it again**). How it works? For ex. if you saved your progress with slotname "SLOT A", and your accepted slot is "SLOT B" it won't work. "SLOT A" must be included in **acceptedSlots**, or if they are not specifed - same as **slotName**
 ## Additional options
 Configurables are specified at the top of the file.
 - `cheatPassage` (string) if specified instead of saying "Cheater!" (when it detects modifying save file) it goes to specified **passage**
@@ -48,5 +48,3 @@ Utility uses **a few** types od encryption. All keys (except binKey) are taken f
 All issues are reported by built-in Twine dialog boxes and JS console :)
 ### Anti cheat
 It uses checksum to determine i file was modified. Also it checks if **ifid** is correct (however wrong ifid is reported as file from different game - not cheating) 
-
-Demo and minified versions available soon
