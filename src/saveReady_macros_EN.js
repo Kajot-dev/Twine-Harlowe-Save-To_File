@@ -1,3 +1,4 @@
+let saveInput;
 const privateSave = {
   //---CONFIGURABLES---
   cheatPassage: false, //string or false boolean
@@ -50,14 +51,14 @@ const privateSave = {
     let keys = privateSave.storyUID.split("-");
     input = privateSave.vigenere(input, keys[4]);
     let checkSum = privateSave.checkSum(input, keys[0]);
-    input = privateSave.insertCheckSum(input, checkSum, keys[1]+keys[2]);
+    input = privateSave.insertCheckSum(input, checkSum, keys[1] + keys[2]);
     input = privateSave.encodeBin(input, privateSave.binKey);
     return input;
   },
   decode: (input) => {
     let keys = privateSave.storyUID.split("-");
     input = privateSave.encodeBin(input, privateSave.binKey);
-    let [text, checksum] = privateSave.pullCheckSum(input, keys[0].length, keys[1]+keys[2]);
+    let [text, checksum] = privateSave.pullCheckSum(input, keys[0].length, keys[1] + keys[2]);
     input = text;
     let tempVigenere = privateSave.vigenere(input, keys[4], true);
     let check = privateSave.verify(tempVigenere, false, true, false);
@@ -70,14 +71,14 @@ const privateSave = {
   },
   checkSum: (input, key) => {
     var kody = key.split("").map(x => x.charCodeAt(0));
-    while(input.length % key.length != 0) input += ".";
-    for (let i=0; i < input.length/key.length; i++) {
-      for (let j=0; j < key.length; j++) {
-        kody[j] = (kody[j]+input.charCodeAt(i*key.length+j)) % 128;
+    while (input.length % key.length != 0) input += ".";
+    for (let i = 0; i < input.length / key.length; i++) {
+      for (let j = 0; j < key.length; j++) {
+        kody[j] = (kody[j] + input.charCodeAt(i * key.length + j)) % 128;
       }
     }
     var out = "";
-    for (let i=0; i < key.length; i++) {
+    for (let i = 0; i < key.length; i++) {
       out += String.fromCharCode(65 + (kody[i] % 26));
     }
     return out;
@@ -86,10 +87,10 @@ const privateSave = {
     while (key.length < checksum.length) key += key;
     key = key.slice(0, checksum.length);
     var kody = key.split("").map(x => x.charCodeAt(0));
-    for (let i=0 ; i < checksum.length; i++) {
+    for (let i = 0; i < checksum.length; i++) {
       if (kody[i] < input.length) {
         input = input.slice(0, kody[i]) + checksum[i] + input.slice(kody[i]);
-      } else{
+      } else {
         input += checksum[i];
       }
     }
@@ -100,12 +101,12 @@ const privateSave = {
     key = key.slice(0, checksumLength);
     var kody = key.split("").map(x => x.charCodeAt(0)).reverse();
     var out = "";
-    for (let i=0 ; i < checksumLength; i++) {
+    for (let i = 0; i < checksumLength; i++) {
       if (kody[i] < input.length) {
         out += input[kody[i]];
-        input = input.slice(0, kody[i]) + input.slice(kody[i]+1);
-      } else{
-        out += input[input.length-1];
+        input = input.slice(0, kody[i]) + input.slice(kody[i] + 1);
+      } else {
+        out += input[input.length - 1];
         input = input.slice(0, -1);
       }
     }
@@ -116,12 +117,12 @@ const privateSave = {
     key = key.length <= input.length ? key : key.slice(0, input.length);
     let pop = 0;
     var out = "";
-    for (let i=0; i < input.length; i++) {
+    for (let i = 0; i < input.length; i++) {
       if (privateSave.vigenereAlphabet.includes(input[i])) {
         let x = privateSave.vigenereAlphabet.indexOf(input[i]);
-        let y = privateSave.vigenereAlphabet.indexOf(key[(i-pop) % key.length]);
+        let y = privateSave.vigenereAlphabet.indexOf(key[(i - pop) % key.length]);
         if (!decode) {
-          x = (x+y) % privateSave.vigenereAlphabet.length;
+          x = (x + y) % privateSave.vigenereAlphabet.length;
         } else {
           x -= y;
           if (x < 0) x += privateSave.vigenereAlphabet.length;
@@ -166,8 +167,8 @@ const privateSave = {
     return new Promise((resolve, reject) => {
       slots = Array.isArray(slots) ? slots : [slots];
       var file = fileInput.files[fileInput.files.length - 1];
-      if (file.name.slice(file.name.lastIndexOf(".")+1).toLowerCase() !== privateSave.extension) {
-        privateSave.openDialog("Wrong extension, correct one is: ."+privateSave.extension);
+      if (file.name.slice(file.name.lastIndexOf(".") + 1).toLowerCase() !== privateSave.extension) {
+        privateSave.openDialog("Wrong extension, correct one is: ." + privateSave.extension);
         reject("wrong_extension");
         return;
       }
@@ -203,6 +204,7 @@ const privateSave = {
         }
         let key = saveArray[0];
         var saveName = key.slice('49').trim();
+        console.log(slots, saveName);
         if (slots.includes(saveName)) {
           if (!(State.deserialise(saveArray[1]) instanceof Error)) { //if this returns true, we are absolutely sure, that save is gonna work
             localStorage.setItem("(Saved Game " + privateSave.storyUID + ") " + targetslot, saveArray[1]);
@@ -226,7 +228,7 @@ const privateSave = {
     var saveOutput = privateSave.get(slot);
     if (saveOutput) {
       saveOutput = privateSave.encode(saveOutput);
-      privateSave.download(saveOutput, "text/plain", name+"."+privateSave.extension);
+      privateSave.download(saveOutput, "text/plain", name + "." + privateSave.extension);
     } else {
       privateSave.openDialog("I can't download save which doesn't exists!");
       console.error(...privateSave.appPrefix, "I can't download save which doesn't exists!");
@@ -239,76 +241,90 @@ const privateSave = {
       return null;
     }
     saveData = privateSave.encode(saveData);
-    privateSave.download(saveData, "text/plain", name+"."+privateSave.extension);
+    privateSave.download(saveData, "text/plain", name + "." + privateSave.extension);
   },
   read: (slot, slots) => {
-    var fileSave = $('#saveupload')[0];
+    var fileSave = saveInput;
     if (!fileSave) {
       fileSave = document.createElement('input');
       fileSave.setAttribute('type', 'file');
       fileSave.setAttribute('id', 'saveupload');
       fileSave.style.display = 'none';
-      fileSave.setAttribute('accept', "*."+privateSave.extension);
+      fileSave.setAttribute('accept', "." + privateSave.extension);
       fileSave.setAttribute('size', '1');
-      $(Selectors.passage).append(fileSave);
-    }
-    fileSave.addEventListener("change", () => {
-      privateSave.process(fileSave, slot, slots).then(() => {
-        fileSave.remove();
-        Engine.showPassage(State.passage);
-        console.log(...privateSave.appPrefix, "Reading from file was succesful!");
-      }).catch(reason => {
-        fileSave.remove();
-        console.error(...privateSave.appPrefix, "Reading from file failed, because:", reason);
-        if (reason == "cheater") {
-          if (privateSave.cheatPassage) Engine.goToPassage(privateSave.cheatPassage);
-          else privateSave.openDialog("Cheater!");
-        }
+      fileSave.addEventListener("change", () => {
+        privateSave.process(fileSave, slot, slots).then(() => {
+          fileSave.remove();
+          saveInput = undefined;
+          Engine.showPassage(State.passage);
+          console.log(...privateSave.appPrefix, "Reading from file succesfull");
+        }).catch(reason => {
+          fileSave.remove();
+          saveInput = undefined;
+          console.error(...privateSave.appPrefix, "Error reading from file:", reason);
+          if (reason == "cheater") {
+            if (privateSave.cheatPassage) Engine.goToPassage(privateSave.cheatPassage);
+            else privateSave.openDialog("Oszust!");
+          }
+        });
+      }, {
+        once: true
       });
-    }, {
-      once: true
-    });
+      saveInput = fileSave;
+    }
     fileSave.click();
   },
   vigenereAlphabet: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890",
-  storyUID: $('tw-storydata').attr('ifid'),
+  storyUID: document.querySelector('tw-storydata').getAttribute('ifid'),
   appPrefix: ["%cSAVE TO FILE:", "font-weight: bold"]
 };
 Object.freeze(privateSave);
-console.info(privateSave.appPrefix[0]+"%c Save to file script is ready!", privateSave.appPrefix[1], "color: green;");
+console.info(privateSave.appPrefix[0] + "%c Save to file script is ready!", privateSave.appPrefix[1], "color: green;");
 const Macros = require("macros");
-Macros.add("readfromfile", function(...args) {
-  if (args.length > 1)  {
+const TwineError = require("internaltypes/twineerror");
+const TwineNotifier = require("internaltypes/twinenotifier");
+Macros.add("readfromfile", function (...args) {
+  let t = "";
+  if (args.length > 1) {
     let accepted = [];
     if (args.length > 2) accepted = args.slice(2, args.length);
     else accepted = [args[1]];
-	  privateSave.read(args[1], accepted);
+    privateSave.read(args[1], accepted);
   }
-	return {
-		TwineScript_TypeName: "a (readfromfile:) operation",
-    TwineScript_ObjectName: "a (readfromfile:) operation",
-    TwineScript_Print: function () { return "" }
-	}
-}, [String, Macros.TypeSignature.zeroOrMore(String)]);
-Macros.add("savetofile", function(_, n, s) { 
-  n = n.trim();
-  while (n[n.length - 1] == ".") n = n.slice(0, n.length-1);
-  if (n === "") return null;
-	privateSave.file(n, s);
-	return {
-		TwineScript_TypeName: "a (savetofile:) operation",
-    TwineScript_ObjectName: "a (savetofile:) operation",
-    TwineScript_Print: function () { return "" }
-	}
-}, [String, String]);
-Macros.add("savetofiledirect", function(_, n, s) {
-  n = n.trim();
-  while (n[n.length - 1] == ".") n = n.slice(0, n.length-1);
-  if (n === "") return null;
-  privateSave.fileDirect(n, s);
+  if (Engine.options.debug) t += "(readfromfile:"+args.toString()+ ")";
   return {
-		TwineScript_TypeName: "a (savetofiledirect:) operation",
+    TwineScript_TypeName: "a (readfromfile:) operation",
+    TwineScript_ObjectName: "a (readfromfile:) operation",
+    TwineScript_Print: function () {
+      return t && TwineNotifier.create(t).render()[0].outerHTML;
+    }
+  }
+}, [String, Macros.TypeSignature.zeroOrMore(String)]);
+Macros.add("savetofile", function (_, n, s) {
+  let t = "";
+  n = n.trim();
+  if (n === "" || s === "") return TwineError.create("macrocall", "This macro does not accept empty strings!");
+  privateSave.file(n, s);
+  if (Engine.options.debug) t += "(savetofile:"+n+", "+s+")";
+  return {
+    TwineScript_TypeName: "a (savetofile:) operation",
+    TwineScript_ObjectName: "a (savetofile:) operation",
+    TwineScript_Print: function () {
+      return t && TwineNotifier.create(t).render()[0].outerHTML;
+    }
+  }
+}, [String, String]);
+Macros.add("savetofiledirect", function (_, n, s) {
+  let t = "";
+  n = n.trim();
+  if (n === "" || s === "") return TwineError.create("macrocall", "This macro does not accept empty strings!");
+  privateSave.fileDirect(n, s);
+  if (Engine.options.debug) t += "(savetofiledirect:"+n+", "+s+")";
+  return {
+    TwineScript_TypeName: "a (savetofiledirect:) operation",
     TwineScript_ObjectName: "a (savetofiledirect:) operation",
-    TwineScript_Print: function () { return "" }
-	}
+    TwineScript_Print: function () {
+      return t && TwineNotifier.create(t).render()[0].outerHTML;
+    }
+  }
 }, [String, String]);

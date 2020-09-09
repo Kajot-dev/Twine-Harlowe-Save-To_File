@@ -1,0 +1,33 @@
+{
+  "name": "harlowe-save-to-file",
+  "version": "1.2.0",
+  "description": "Utility to save harlowe's data to file",
+  "main": "saveready.js",
+  "scripts": {
+    "test": "node",
+    "build": "babel src --out-dir dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kjplay/Twine-Harlowe-Save-To_File.git"
+  },
+  "keywords": [
+    "file",
+    "twine",
+    "harlowe",
+    "safe"
+  ],
+  "author": "Jakub Jaruszewski",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Kjplay/Twine-Harlowe-Save-To_File/issues"
+  },
+  "homepage": "https://github.com/Kjplay/Twine-Harlowe-Save-To_File#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.11.6",
+    "@babel/core": "^7.11.6",
+    "@babel/preset-env": "^7.11.5",
+    "babel-preset-minify": "^0.5.1"
+  },
+  "dependencies": {}
+}

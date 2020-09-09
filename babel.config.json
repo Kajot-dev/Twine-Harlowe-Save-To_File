@@ -1,0 +1,16 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": "> 5%, not dead"
+      }
+    ],
+    ["babel-preset-minify", 
+      {
+        "builtIns": false,
+        "mangle": true 
+      }
+    ]
+  ]
+}
