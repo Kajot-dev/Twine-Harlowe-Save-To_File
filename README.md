@@ -18,8 +18,8 @@ It's a macro based scripting language made from Javascript, used inside Twine.
 ### A `(savetofile: String, String)` macro
 This macro pulls your save data **from cookies** - the last time when you used `(save-game:)` and downloads it as an encrypted file. It's important to use `(save-game:)` or checking with `(saved-games:)` before using this macro.
 #### It takes **2** arguments
-- **slotName** - string containing your slot name. The same as you would use for `(load-game:)` or `(save-game:)` macro.
 - **fileName** - string containing your file name, **without extension** for example `my_save`
+- **slotName** - string containing your slot name. The same as you would use for `(load-game:)` or `(save-game:)` macro.
 ### A `(savetofiledirect: String, String)` macro
 This macro works similar to `(savetofile:)`, but it pulls your save data **directly from Twine**, meaning it doesn't need already saved game. Note, that it doesn't overwrite your cookies, so if you want to save your progress here as well, you should use `(save-game:)` accordingly.
 #### It takes **2** arguments (same as before)
