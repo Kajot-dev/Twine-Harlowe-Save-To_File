@@ -1,4 +1,6 @@
 let saveInput;
+
+const { dialog } = require("utils/renderutils");
 const privateSave = {
   //---CONFIGURABLES---
   cheatPassage: false, //string or false boolean
@@ -9,7 +11,17 @@ const privateSave = {
   openDialog: (message, func) => {
     func = typeof func == "function" ? func : () => {};
     if (typeof message == "string") {
-      return $(Selectors.story).append(Dialog(message, undefined, func));
+      return $("tw-story").append(dialog({
+        message,
+        buttons: [
+          {
+            name: "OK",
+            callback() {
+              func();
+            }
+          }
+        ]
+      }));
     } else return null;
   },
   get: saveslot => {
@@ -163,7 +175,7 @@ const privateSave = {
     if (!filBool) return "wrong_save_key";
     return true;
   },
-  process: (fileInput, targetslot, slots) => {
+  process: (fileInput, targetslot, slots, section) => {
     return new Promise((resolve, reject) => {
       slots = Array.isArray(slots) ? slots : [slots];
       var file = fileInput.files[fileInput.files.length - 1];
@@ -204,12 +216,13 @@ const privateSave = {
         }
         let key = saveArray[0];
         var saveName = key.slice('49').trim();
-        console.log(slots, saveName);
         if (slots.includes(saveName)) {
-          if (!(State.deserialise(saveArray[1]) instanceof Error)) { //if this returns true, we are absolutely sure, that save is gonna work
+          const possibleErr = State.deserialise(section, saveArray[1]);
+          if (!(possibleErr instanceof Error)) { //if this returns true, we are absolutely sure, that save is gonna work
             localStorage.setItem("(Saved Game " + privateSave.storyUID + ") " + targetslot, saveArray[1]);
             resolve(true);
           } else {
+            console.error(possibleErr);
             privateSave.openDialog("Save corrupted - Twine refused loading it!");
             reject("corrupted_save_data");
           }
@@ -243,7 +256,7 @@ const privateSave = {
     saveData = privateSave.encode(saveData);
     privateSave.download(saveData, "text/plain", name + "." + privateSave.extension);
   },
-  read: (slot, slots) => {
+  read: (slot, slots, section) => {
     var fileSave = saveInput;
     if (!fileSave) {
       fileSave = document.createElement('input');
@@ -253,7 +266,7 @@ const privateSave = {
       fileSave.setAttribute('accept', "." + privateSave.extension);
       fileSave.setAttribute('size', '1');
       fileSave.addEventListener("change", () => {
-        privateSave.process(fileSave, slot, slots).then(() => {
+        privateSave.process(fileSave, slot, slots, section).then(() => {
           fileSave.remove();
           saveInput = undefined;
           Engine.showPassage(State.passage);
@@ -278,18 +291,20 @@ const privateSave = {
   storyUID: document.querySelector('tw-storydata').getAttribute('ifid'),
   appPrefix: ["%cSAVE TO FILE:", "font-weight: bold"]
 };
+
 Object.freeze(privateSave);
 console.info(privateSave.appPrefix[0] + "%c Save to file script is ready!", privateSave.appPrefix[1], "color: green;");
 const Macros = require("macros");
 const TwineError = require("internaltypes/twineerror");
 const TwineNotifier = require("internaltypes/twinenotifier");
-Macros.add("readfromfile", function (...args) {
+Macros.add("readfromfile", function (section, ...args) {
   let t = "";
-  if (args.length > 1) {
+  console.log(section);
+  if (args.length > 0) {
     let accepted = [];
-    if (args.length > 2) accepted = args.slice(2, args.length);
-    else accepted = [args[1]];
-    privateSave.read(args[1], accepted);
+    if (args.length > 1) accepted = args.slice(1, args.length);
+    else accepted = [args[0]];
+    privateSave.read(args[0], accepted, section);
   }
   if (Engine.options.debug) t += "(readfromfile:"+args.toString()+ ")";
   return {

@@ -24,10 +24,10 @@
   },
   "homepage": "https://github.com/Kjplay/Twine-Harlowe-Save-To_File#readme",
   "devDependencies": {
-    "@babel/cli": "^7.13.16",
-    "@babel/core": "^7.14.0",
-    "@babel/preset-env": "^7.14.1",
-    "babel-preset-minify": "^0.5.1"
+    "@babel/cli": "^7.17.10",
+    "@babel/core": "^7.18.2",
+    "@babel/preset-env": "^7.18.2",
+    "babel-preset-minify": "^0.5.2"
   },
   "dependencies": {}
 }
