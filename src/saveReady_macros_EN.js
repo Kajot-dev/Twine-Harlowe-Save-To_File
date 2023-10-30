@@ -39,7 +39,9 @@ const privateSave = {
     }
   },
   getDirect: slot => {
-    let data = State.serialise();
+    let dataObj = State.serialise();
+    let data = null;
+    if (dataObj.hasOwnProperty("pastAndPresent")) data = dataObj.pastAndPresent;
     if (typeof data === "string") return "(Saved Game " + privateSave.storyUID + ") " + slot + "\n" + data;
     return null;
   },
@@ -185,7 +187,7 @@ const privateSave = {
         return;
       }
       if (!file || (file.size / 1024) > privateSave.maxFileSize) {
-        privateSave.openDialog("File too large (or your browser couldn'y provide it)");
+        privateSave.openDialog("File too large (or your browser couldn't provide it)");
         reject("none/too_large");
         return;
       }
@@ -249,7 +251,7 @@ const privateSave = {
   },
   fileDirect: (name, slot) => {
     let saveData = privateSave.getDirect(slot);
-    if (typeof saveData === "null") {
+    if (saveData === null) {
       privateSave.openDialog("I couldn't download save - probably Twine's error!");
       return null;
     }
@@ -297,47 +299,52 @@ console.info(privateSave.appPrefix[0] + "%c Save to file script is ready!", priv
 const Macros = require("macros");
 const TwineError = require("internaltypes/twineerror");
 const TwineNotifier = require("internaltypes/twinenotifier");
-Macros.add("readfromfile", function (section, ...args) {
+Macros.add("readfromfile", "Instant", function (section, ...args) {
   let t = "";
-  console.log(section);
   if (args.length > 0) {
     let accepted = [];
     if (args.length > 1) accepted = args.slice(1, args.length);
     else accepted = [args[0]];
     privateSave.read(args[0], accepted, section);
   }
-  if (Engine.options.debug) t += "(readfromfile:"+args.toString()+ ")";
+  if (Utils.options.debug) t += "(readfromfile:"+args.toString()+ ")";
   return {
+    TwineScript_TypeID: "instant",
     TwineScript_TypeName: "a (readfromfile:) operation",
     TwineScript_ObjectName: "a (readfromfile:) operation",
+    TwineScript_Unstorable: true,
     TwineScript_Print: function () {
       return t && TwineNotifier.create(t).render()[0].outerHTML;
     }
   }
 }, [String, Macros.TypeSignature.zeroOrMore(String)]);
-Macros.add("savetofile", function (_, n, s) {
+Macros.add("savetofile", "Instant", function (_, n, s) {
   let t = "";
   n = n.trim();
   if (n === "" || s === "") return TwineError.create("macrocall", "This macro does not accept empty strings!");
   privateSave.file(n, s);
-  if (Engine.options.debug) t += "(savetofile:"+n+", "+s+")";
+  if (Utils.options.debug) t += "(savetofile:"+n+", "+s+")";
   return {
+    TwineScript_TypeID: "instant",
     TwineScript_TypeName: "a (savetofile:) operation",
     TwineScript_ObjectName: "a (savetofile:) operation",
+    TwineScript_Unstorable: true,
     TwineScript_Print: function () {
       return t && TwineNotifier.create(t).render()[0].outerHTML;
     }
   }
 }, [String, String]);
-Macros.add("savetofiledirect", function (_, n, s) {
+Macros.add("savetofiledirect", "Instant", function (_, n, s) {
   let t = "";
   n = n.trim();
   if (n === "" || s === "") return TwineError.create("macrocall", "This macro does not accept empty strings!");
   privateSave.fileDirect(n, s);
-  if (Engine.options.debug) t += "(savetofiledirect:"+n+", "+s+")";
+  if (Utils.options.debug) t += "(savetofiledirect:"+n+", "+s+")";
   return {
+    TwineScript_TypeID: "instant",
     TwineScript_TypeName: "a (savetofiledirect:) operation",
     TwineScript_ObjectName: "a (savetofiledirect:) operation",
+    TwineScript_Unstorable: true,
     TwineScript_Print: function () {
       return t && TwineNotifier.create(t).render()[0].outerHTML;
     }
